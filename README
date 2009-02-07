@@ -1,0 +1,15 @@
+Scheduler 0.0.0
+=======
+
+plugin/gem for easy scheduling recurring tasks for ruby projects
+
+Example
+=======
+
+Scheduler::Cron::Configuration.configure do |cron|
+  cron.run('do:some:stuff').daily.at_hour(1).at_minute(1)
+  cron.run('do:more:stuff').on_day_of_week(:mon, :wed).at_hour(5).at_minute(1)
+end
+
+
+Copyright (c) 2009 Ingo Weiss, released under the MIT license
