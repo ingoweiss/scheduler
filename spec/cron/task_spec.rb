@@ -37,12 +37,17 @@ describe Scheduler::Cron::Task do
       @task.at_minute(22, 50, 9)
       @task.minute_string.should eql('9,22,50')
     end
-  
+    
+    it "should return '*' if not specficied" do
+      @task.instance_variable_set(:@minute, nil)
+      @task.minute_string.should eql('*')
+    end
+    
     it "should return '*' if all minutes are specified" do
       @task.at_minute(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59)
       @task.minute_string.should eql('*')
     end
-    
+  
   end
   
   describe "'at_hour' method" do
@@ -65,6 +70,11 @@ describe Scheduler::Cron::Task do
     it "should return hours, sorted and separated by commas" do
       @task.at_hour(0, 22, 20)
       @task.hour_string.should eql('0,20,22')
+    end
+    
+    it "should return '*' if not specficied" do
+      @task.instance_variable_set(:@hour, nil)
+      @task.hour_string.should eql('*')
     end
   
     it "should return '*' if all hours are specified" do
@@ -109,6 +119,11 @@ describe Scheduler::Cron::Task do
       @task.on_month(11,3,5)
       @task.month_string.should eql('3,5,11')
     end
+    
+    it "should return '*' if not specficied" do
+      @task.instance_variable_set(:@month, nil)
+      @task.month_string.should eql('*')
+    end
   
     it "should return '*' if all days are specified" do
       @task.on_month(1,2,3,4,5,6,7,8,9,10,11,12)
@@ -140,6 +155,11 @@ describe Scheduler::Cron::Task do
     it "should return days, sorted and separated by commas" do
       @task.on_day_of_month(4,5)
       @task.day_of_month_string.should eql('4,5')
+    end
+    
+    it "should return '*' if not specficied" do
+      @task.instance_variable_set(:@day_of_month, nil)
+      @task.day_of_month_string.should eql('*')
     end
   
     it "should return '*' if all days are specified" do
@@ -181,10 +201,64 @@ describe Scheduler::Cron::Task do
       @task.on_day_of_week(4,5)
       @task.day_of_week_string.should eql('4,5')
     end
+    
+    it "should return '*' if not specficied" do
+      @task.instance_variable_set(:@day_of_week, nil)
+      @task.day_of_week_string.should eql('*')
+    end
   
     it "should return '*' if all days are specified" do
       @task.on_day_of_week(0,1,2,3,4,5,6)
       @task.day_of_week_string.should eql('*')
+    end
+    
+  end
+  
+  describe "'from' method" do
+    
+    it "should set the task root and return itself" do
+      @task.from('/path/to/task/root').should eql(@task)
+      @task.task_root.should eql('/path/to/task/root')
+    end
+    
+  end
+  
+  describe "'with' method" do
+    
+    it "should set options and return itself" do
+      @task.with(:RAILS_ENV => 'production').should eql(@task)
+      @task.options.should ==({:RAILS_ENV => 'production'})
+    end
+    
+  end
+  
+  describe "'options_string' method" do
+    
+    it "should format options for command line use" do
+      @task.instance_variable_set(:@options, {:from => 'first', :to => 'last'})
+      @task.options_string.should eql('to=last from=first')
+    end
+    
+    it "should return nil if options are nil" do
+      @task.instance_variable_set(:@options, nil)
+      @task.options_string.should be_nil
+    end
+    
+    it "should return nil if options are empty" do
+      @task.instance_variable_set(:@options, {})
+      @task.options_string.should be_nil
+    end
+    
+  end
+  
+  describe "'task_string" do
+    
+    it "should should assemble the task as run from the command line" do
+      @task.instance_variable_set(:@task_root, '/path/to/task/root')
+      @task.instance_variable_set(:@task, 'do:some:stuff')
+      @task.should_receive(:options_string).and_return('option=value')
+      
+      @task.task_string.should eql('cd /path/to/task/root;`which rake` do:some:stuff option=value')
     end
     
   end
@@ -198,6 +272,16 @@ describe Scheduler::Cron::Task do
       @task.should_receive(:month_string).and_return('month')
       @task.should_receive(:day_of_week_string).and_return('day_of_week')
       @task.schedule_string.should eql("minute hour day_of_month month day_of_week")
+    end
+    
+  end
+  
+  describe "'to_s' method" do
+    
+    it "should assemble the crontab line for the task" do
+      @task.should_receive(:schedule_string).and_return('schedule_string')
+      @task.should_receive(:task_string).and_return('task_string')
+      @task.to_s.should eql('schedule_string task_string')
     end
     
   end

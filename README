@@ -1,15 +1,22 @@
-Scheduler 0.0.0
-=======
+= Scheduler 0.0.0
 
-plugin/gem for easy scheduling recurring tasks for ruby projects
+Easy scheduling of recurring tasks for ruby projects
 
-Example
-=======
+Example:
 
-Scheduler::Cron::Configuration.configure do |cron|
-  cron.run('do:some:stuff').daily.at_hour(1).at_minute(1)
-  cron.run('do:more:stuff').on_day_of_week(:mon, :wed).at_hour(5).at_minute(1)
-end
+  Scheduler::Cron::Configuration.configure do |cron|
+    cron.run('do:some:stuff').from(RAILS_ROOT).at_hour(1).at_minute(1)
+    cron.run('do:more:stuff').from(RAILS_ROOT).on_day_of_week(:mon, :wed).at_hour(5).at_minute(1)
+  end
+  
+  Scheduler::Cron::Configuration.write
+  Scheduler::Cron::Configuration.install
 
+The above will result in the following crontab file being installed:
+
+  1 1 * * * cd /path/to/project;`which rake` do:some:stuff
+  1 5 * * 1,3 cd /path/to/project;`which rake` do:more:stuff
+
+Scheduler is in an early experimental stage and not yet intended for production use. Please contact me if you have suggestions!
 
 Copyright (c) 2009 Ingo Weiss, released under the MIT license
