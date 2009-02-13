@@ -38,6 +38,14 @@ module Scheduler
         %x[crontab #{file}]
       end
       
+      # Write and install crontab file
+      #   # Example:
+      #   Scheduler::Cron.write_and_install
+      def self.write_and_install(file='/tmp/crontab')
+        write(file)
+        install(file)
+      end
+      
       # Yield Configuration singleton instance
       #   # Example:
       #   Scheduler::Cron::Configuration.configure do |cron|
